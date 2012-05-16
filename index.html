@@ -178,11 +178,15 @@ function click(d) {
 function flatten(root) {
   var nodes = [], i = 0;
 
+  var parent = root;
   function recurse(node) {
-    if (node.children) node.size = node.children.reduce(function(p, v) { return p + recurse(v); }, 0);
+    if (node.children) node.size = node.children.reduce(function(p, v) { 
+      parent = node; 
+      return p + recurse(v); 
+    }, 0);
     if (!node.id) node.id = ++i;
-    if (!node.x) node.x = root.x;
-    if (!node.y) node.y = root.y;
+    if (!node.x) node.x = parent.x + Math.ceil(Math.random() * 50);
+    if (!node.y) node.y = parent.y + Math.ceil(Math.random() * 50);
     if (node.status !== 'removed') nodes.push(node);
     return node.size;
   }
