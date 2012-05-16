@@ -1,8 +1,5 @@
 (function(root) {
 
-    //var url = 'https://api.github.com/repos/jamuhl/nodeEventStore/commits?sha=master';
-    var url = 'https://api.github.com/repos/jamuhl/octoviz/commits?sha=master';
-
     function getCommitDetails(commits, callback) {
         var todo = commits.length;
         _.each(commits, function(commit, index, list) {
@@ -60,10 +57,10 @@
         return parent;  
     }
 
-    function commitsToFiles(commits, callback) {
+    function commitsToFiles(name, commits, callback) {
         var history = [{
             id: 'root',
-            name: 'root',
+            name: name,
             children: []
         }];
 
@@ -73,7 +70,6 @@
             var commit = commits[i];
             var contributorColor = intToARGB(hashCode(commit.commit.committer.name));
             contributorColor = '#' + contributorColor.substring(0, 6);
-            console.log(contributorColor);
 
             _.each(commit.files, function(file) {
                 var t = extendTree(history[z], file.filename);
@@ -87,9 +83,10 @@
         callback(history);
     }
 
-    function loadFiles(callback) {
+    function loadFiles(repo, branch, callback) {
+        var url = 'https://api.github.com/repos/' + repo + '/commits?sha=' + branch;
         loadCommitHistory(url, function(commits) {
-            commitsToFiles(commits, function(files) {
+            commitsToFiles(repo + ':' + branch,commits, function(files) {
                 callback(files);
             });
         });

@@ -5,7 +5,7 @@
 	<title>Basic Sample Usage</title>
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.min.js"></script>
-	<script type="text/javascript" src="lib/underscore-1.3.3.min.js"></script>
+	  <script type="text/javascript" src="lib/underscore-1.3.3.min.js"></script>
     <script src="http://d3js.org/d3.v2.js"></script>
     <script type="text/javascript" src="source/octocom.js"></script>
 
@@ -34,9 +34,20 @@
 
 <body>
 
-    
+    <div>
+      <input id="repo" type="text" value="jamuhl/octoviz" />
+      <input id="branch" type="text" value="master" />
+      <button id="load">load</button>
+    </div>
 
+    <div id="controls" >
+      <button id="play">play</button>
+      <button id="pause">pause</button>
+      <button id="previous">previous</button>
+      <button id="next">next</button>
+    </div>
 
+    <div id="viz" ></div>
 
     <script type="text/javascript">
 
@@ -46,6 +57,110 @@ var w = 1280,
     link,
     root = {};
 
+var loadedHistory
+  , currentFrame
+  , interval;
+
+var btnLoad = $('#load')
+  , controls = $('#controls')
+  , btnPlay = $('#play')
+  , btnPause = $('#pause')
+  , btnNext= $('#next')
+  , btnPrevious = $('#previous')
+  , inputRepo = $('#repo')
+  , inputBranch = $('#branch');
+
+controls.hide();
+btnPause.hide();
+
+btnLoad.click(function(e) {
+  e.preventDefault();
+
+  controls.hide();
+
+  root = {};
+  octocom.load(inputRepo.val(), inputBranch.val(), function(history) {
+    loadedHistory = history;
+    currentFrame = -1;
+
+    controls.show();
+  });
+})
+
+btnPlay.click(function(e) {
+  e.preventDefault();
+
+  btnPlay.hide();
+  btnPause.show();
+  play();
+})
+
+btnPause.click(function(e) {
+  e.preventDefault();
+
+  btnPlay.show();
+  btnPause.hide();
+  pause();
+})
+
+btnNext.click(function(e) {
+  e.preventDefault();
+
+  btnPlay.show();
+  btnPause.hide();
+  pause();
+  step(1);
+})
+
+btnPrevious.click(function(e) {
+  e.preventDefault();
+
+  btnPlay.show();
+  btnPause.hide();
+  pause();
+  step(-1);
+})
+
+function pause() {
+  if (interval) clearInterval(interval);
+}
+
+function play() {
+  interval = setInterval(function() { step(1); }, 2000);
+}
+
+function step(i) {
+
+  if (i < 0 && currentFrame + i >= 0) { 
+    currentFrame = currentFrame + i;
+  } else if (i > 0 && currentFrame + i < loadedHistory.length) {
+    currentFrame = currentFrame + i;
+  } else {
+    return;
+  }
+
+  if (currentFrame >= 0 && currentFrame < loadedHistory.length) {
+    if (i < 0) {
+      function recurse(node) {
+        if (node.children) _.each(node.children, function(node) {
+          recurse(node); 
+        });
+        if (!node.children && !node._children) node.status = 'removed';
+      }
+
+      recurse(root);
+      root = jQuery.extend(true, root, loadedHistory[currentFrame]);
+    } else {
+      root = jQuery.extend(true, root, loadedHistory[currentFrame]);
+    }
+    root.fixed = true;
+    root.x = w / 2;
+    root.y = h / 2 - 80;
+
+    update();
+  }
+}
+
 var force = d3.layout.force()
     .on("tick", tick)
     .charge(function(d) { return d._children ? -d.size / 100 : -500; })
@@ -53,26 +168,26 @@ var force = d3.layout.force()
     .size([w, h - 160])
     .friction(0.4);
 
-var vis = d3.select("body").append("svg:svg")
+var vis = d3.select("#viz").append("svg:svg")
     .attr("width", w)
     .attr("height", h);
 
-octocom.load(function(history) {
-  var i = 0;
+// octocom.load(function(history) {
+//   var i = 0;
 
-  setInterval(function() {
-      if (i < history.length) {
-        root = jQuery.extend(true, root, history[i]);
-        root.fixed = true;
-        root.x = w / 2;
-        root.y = h / 2 - 80;
+//   setInterval(function() {
+//       if (i < history.length) {
+//         root = jQuery.extend(true, root, history[i]);
+//         root.fixed = true;
+//         root.x = w / 2;
+//         root.y = h / 2 - 80;
 
-        update();
-        i++
-      }
-  }, 2000)
+//         update();
+//         i++
+//       }
+//   }, 2000)
 
-});
+// });
 
 // d3.json("http://mbostock.github.com/d3/talk/20111116/flare.json", function(json) {
 //     console.log(json);
@@ -89,7 +204,7 @@ function update() {
 
   // remove links with deleted nodes
   links = _.reject(links, function(link) {
-    return link.target.status === 'removed';
+    return link.target.status === 'removed' /*|| link.target.status === 'renamed'*/;
   }) 
 
   // Restart the force layout.
@@ -187,7 +302,7 @@ function flatten(root) {
     if (!node.id) node.id = ++i;
     if (!node.x) node.x = parent.x + Math.ceil(Math.random() * 50);
     if (!node.y) node.y = parent.y + Math.ceil(Math.random() * 50);
-    if (node.status !== 'removed') nodes.push(node);
+    if (node.status !== 'removed' /*&& node.status !== 'renamed'*/) nodes.push(node); // theres yet no way to get the previous name of a renamed or moved file as status is renamed with new filename
     return node.size;
   }
 
