@@ -1,5 +1,6 @@
 (function(root) {
 
+    //var url = 'https://api.github.com/repos/jamuhl/nodeEventStore/commits?sha=master';
     var url = 'https://api.github.com/repos/jamuhl/octoviz/commits?sha=master';
 
     function getCommitDetails(commits, callback) {
@@ -22,36 +23,53 @@
         });
     }
 
-    function flattenToFiles(commits, callback) {
+    function extendTree(root, path) {
+
+        var parts = path.split('/'),  
+            parent = root,  
+            pl, i;  
+
+        pl = parts.length;
+        for (i = 0; i < pl; i++) {
+            var found = _.find(parent.children, function(file) {
+                return file.id === parts[i];
+            });
+
+            if (!found) {  
+                found = (i === pl -1) ? { id: path, name: parts[i]} : { id: parts[i], name: parts[i], children: [] };  
+                parent.children.push(found);
+            }  
+            parent = found;
+        }
+
+        return parent;  
+    }
+
+    function commitsToFiles(commits, callback) {
+        var root = {
+            id: 'root',
+            name: 'root',
+            children: []
+        };
+
         var files = {}
-            arr = [];
+          ,  arr = [];
 
         for (var i = commits.length - 1; i >= 0; i--) {
             var commit = commits[i];
 
             _.each(commit.files, function(file) {
-                var t;
-                if (!files[file.filename]) {
-                    files[file.filename] = {};
-                    t = files[file.filename];
-                    arr.push(t);
-                } else {
-                    t = files[file.filename];
-                }
+                var t = extendTree(root, file.filename);
 
                 t.size = (t.size || 0) + (file.additions || 0) + (files.deletions || 0);
-                t.x = 0;
-                t.y = 0;
-                t.id = file.filename;
             });
         }
-        callback({ children: arr, x: 0, y: 0 });
+        callback(root);
     }
 
     function loadFiles(callback) {
         loadCommitHistory(url, function(commits) {
-            flattenToFiles(commits, function(files) {
-                console.log(files);
+            commitsToFiles(commits, function(files) {
                 callback(files);
             });
         });
