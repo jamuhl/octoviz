@@ -32,7 +32,7 @@
         pl = parts.length;
         for (i = 0; i < pl; i++) {
             var found = _.find(parent.children, function(file) {
-                return file.id === parts[i];
+                return file.id === parts[i] || file.id === path;
             });
 
             if (!found) {  
@@ -46,25 +46,27 @@
     }
 
     function commitsToFiles(commits, callback) {
-        var root = {
+        var history = [{
             id: 'root',
             name: 'root',
             children: []
-        };
+        }];
 
-        var files = {}
-          ,  arr = [];
-
+        var z = 0;
         for (var i = commits.length - 1; i >= 0; i--) {
+            if (z > 0) history[z] = jQuery.extend(true, {}, history[z - 1]);
             var commit = commits[i];
 
             _.each(commit.files, function(file) {
-                var t = extendTree(root, file.filename);
+                var t = extendTree(history[z], file.filename);
 
-                t.size = (t.size || 0) + (file.additions || 0) + (files.deletions || 0);
+                t.size = (t.size || 0) + (file.additions || 0) + (file.deletions || 0);
+                t.status = file.status;
             });
+
+            z++;
         }
-        callback(root);
+        callback(history);
     }
 
     function loadFiles(callback) {

@@ -44,7 +44,7 @@ var w = 1280,
     h = 800,
     node,
     link,
-    root;
+    root = {};
 
 var force = d3.layout.force()
     .on("tick", tick)
@@ -57,12 +57,21 @@ var vis = d3.select("body").append("svg:svg")
     .attr("width", w)
     .attr("height", h);
 
-octocom.load(function(files) {
-  root = files;
-  root.fixed = true;
-  root.x = w / 2;
-  root.y = h / 2 - 80;
-  update();
+octocom.load(function(history) {
+  var i = 0;
+
+  setInterval(function() {
+      if (i < history.length) {
+        root = jQuery.extend(true, root, history[i]);
+        root.fixed = true;
+        root.x = w / 2;
+        root.y = h / 2 - 80;
+
+        update();
+        i++
+      }
+  }, 2000)
+
 });
 
 // d3.json("http://mbostock.github.com/d3/talk/20111116/flare.json", function(json) {
@@ -77,6 +86,11 @@ octocom.load(function(files) {
 function update() {
   var nodes = flatten(root),
       links = d3.layout.tree().links(nodes);
+
+  // remove links with deleted nodes
+  links = _.reject(links, function(link) {
+    return link.target.status === 'removed';
+  }) 
 
   // Restart the force layout.
   force
@@ -96,7 +110,7 @@ function update() {
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; });
 
-  // Exit any old links.
+  // Exit any old links
   link.exit().remove();
 
   // Update the nodes…
@@ -109,12 +123,12 @@ function update() {
 
 
   // Enter any new nodes.
-    var nodeEnter = node.enter().append("svg:g")
+  var nodeEnter = node.enter().append("svg:g")
       .attr("cx", function(d) { return d.x; })
       .attr("cy", function(d) { return d.y; })
       .attr("class", "node")
       .on("click", click)
-      .call(force.drag);;
+      .call(force.drag);
 
   var circleNode = nodeEnter.append("svg:circle")
       .attr("r", function(d) { return d.children ? 4.5 : Math.sqrt(d.size) /*/ 2*/; })
@@ -168,8 +182,8 @@ function flatten(root) {
     if (node.children) node.size = node.children.reduce(function(p, v) { return p + recurse(v); }, 0);
     if (!node.id) node.id = ++i;
     if (!node.x) node.x = root.x;
-    if (!node.y )node.y = root.y;
-    nodes.push(node);
+    if (!node.y) node.y = root.y;
+    if (node.status !== 'removed') nodes.push(node);
     return node.size;
   }
 
