@@ -23,6 +23,21 @@
         });
     }
 
+    function hashCode(str) { // java String#hashCode
+        var hash = 0;
+        for (var i = 0; i < str.length; i++) {
+           hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return hash;
+    } 
+
+    function intToARGB(i){
+        return ((i>>24)&0xFF).toString(16) + 
+               ((i>>16)&0xFF).toString(16) + 
+               ((i>>8)&0xFF).toString(16) + 
+               (i&0xFF).toString(16);
+    }
+
     function extendTree(root, path) {
 
         var parts = path.split('/'),  
@@ -56,14 +71,17 @@
         for (var i = commits.length - 1; i >= 0; i--) {
             if (z > 0) history[z] = jQuery.extend(true, {}, history[z - 1]);
             var commit = commits[i];
+            var contributorColor = intToARGB(hashCode(commit.commit.committer.name));
+            contributorColor = '#' + contributorColor.substring(0, 6);
+            console.log(contributorColor);
 
             _.each(commit.files, function(file) {
                 var t = extendTree(history[z], file.filename);
 
                 t.size = (t.size || 0) + (file.additions || 0) + (file.deletions || 0);
                 t.status = file.status;
+                t.color = contributorColor;
             });
-
             z++;
         }
         callback(history);
