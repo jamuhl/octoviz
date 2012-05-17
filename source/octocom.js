@@ -3,21 +3,25 @@
     function getCommitDetails(commits, callback) {
         var todo = commits.length;
         _.each(commits, function(commit, index, list) {
-            $.getJSON(commit.url, function(detail) {
+            $.ajax({
+                url: commit.url}).done(function ( detail ) {
                 todo--;
                 list[index] = detail;
 
                 if (!todo) callback(list);
-            });    
+            }); 
         });
     }
 
     function loadCommitHistory(url, callback) {
-        $.getJSON(url, function(commits) {
+
+        $.ajax({
+            url: url}).done(function ( commits ) {
             getCommitDetails(commits, function(list) {
                 callback(list);
             });
         });
+
     }
 
     function hashCode(str) { // java String#hashCode
