@@ -3,9 +3,9 @@
     function getCommitDetails(commits, callback) {
         var todo = commits.length;
         _.each(commits, function(commit, index, list) {
-            $.getJSON(commit.url, function(detail) {
+            $.getJSON(commit.url + '?callback=?', function(ret) {
                 todo--;
-                list[index] = detail;
+                list[index] = ret.data;
 
                 if (!todo) callback(list);
             });    
@@ -13,8 +13,8 @@
     }
 
     function loadCommitHistory(url, callback) {
-        $.getJSON(url, function(commits) {
-            getCommitDetails(commits, function(list) {
+        $.getJSON(url + '&callback=?', function(ret) {
+            getCommitDetails(ret.data, function(list) {
                 callback(list);
             });
         });
