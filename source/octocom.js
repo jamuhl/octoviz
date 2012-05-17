@@ -1,4 +1,4 @@
-(function(root) {
+(function(window) {
 
     function getCommitDetails(commits, callback) {
         var todo = commits.length;
@@ -92,8 +92,8 @@
         });
     }
 
-    root.octocom = {
+    window.octocom = {
         load: loadFiles
     };
 
-}(window));
+}(this));
