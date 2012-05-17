@@ -2,26 +2,22 @@
 
     function getCommitDetails(commits, callback) {
         var todo = commits.length;
-        _.each(commits, function(commit, index, list) {
-            $.ajax({
-                url: commit.url}).done(function ( detail ) {
+        _.each(commits, function(commit, index, list) { console.log(commit.url);
+            $.getJSON(commit.url + '?callback=?', function(ret) {
                 todo--;
-                list[index] = detail;
+                list[index] = ret.data;
 
                 if (!todo) callback(list);
-            }); 
+            });    
         });
     }
 
     function loadCommitHistory(url, callback) {
-
-        $.ajax({
-            url: url}).done(function ( commits ) {
-            getCommitDetails(commits, function(list) {
+        $.getJSON(url + '&callback=?', function(ret) {
+            getCommitDetails(ret.data, function(list) {
                 callback(list);
             });
         });
-
     }
 
     function hashCode(str) { // java String#hashCode
