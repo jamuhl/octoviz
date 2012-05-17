@@ -2,7 +2,7 @@
 
     function getCommitDetails(commits, callback) {
         var todo = commits.length;
-        _.each(commits, function(commit, index, list) { console.log(commit.url);
+        _.each(commits, function(commit, index, list) {
             $.getJSON(commit.url + '?callback=?', function(ret) {
                 todo--;
                 list[index] = ret.data;
