@@ -10,45 +10,59 @@
     <script type="text/javascript" src="source/octocom.js"></script>
     <script type="text/javascript" src="source/octoviz.js"></script>
 
-    <style type="text/css">
+    <link type="text/css" rel="stylesheet" href="css/bootstrap-2.0.2.min.css">
+    <link type="text/css" rel="stylesheet" href="css/main.css">
 
-        circle.node {
-          cursor: pointer;
-          stroke: #000;
-          stroke-width: .5px;
-        }
-
-        line.link {
-          fill: none;
-          stroke: #9ecae1;
-          stroke-width: 1.5px;
-        }
-
-        .node text, .contributor text, .commitMsg {
-          font-size: 11px;
-          color: #444;
-        }
-
-    </style>
 
 </head>
 
 <body>
 
-    <div>
-      <input id="repo" type="text" value="jamuhl/octoviz" />
-      <input id="branch" type="text" value="master" />
-      <button id="load">load</button>
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="#">octoviz</a>
+        <ul class="nav">
+          <li class="active"><a href="#">Commit-History</a></li>
+          <li><a href="https://github.com/jamuhl/octoviz">Fork-Me</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="page-header">
+      <h1> octoviz
+        <small> - visualize your github commit history</small>
+      </h1>
+
+      <div class="well">
+        <form id="loadControl" class="form-inline">
+          <input id="repo" type="text" value="jamuhl/octoviz" placeholder="user/repository" />
+          <input id="branch" type="text" value="master" placeholder="branch"/>
+          <button id="load" class="btn">load</button>
+        </form>
+
+        <form id="controls" class="form-inline">
+          <button id="play" class="btn btn-primary"><i class="icon-play"></i></button>
+          <button id="pause" class="btn"><i class="icon-pause"></i></button>
+          <button id="previous" class="btn"><i class="icon-step-backward"></i></button>
+          <button id="next" class="btn"><i class="icon-step-forward"></i></button>
+        </form>
+      </div>
+
     </div>
 
-    <div id="controls" >
-      <button id="play">play</button>
-      <button id="pause">pause</button>
-      <button id="previous">previous</button>
-      <button id="next">next</button>
+    <div id="main" class="content">
+      <div id="viz" ></div>
     </div>
 
-    <div id="viz" ></div>
+    <footer id="footer">
+      <p>--- jamuhl 2010 ---</p>
+    </footer>
+
+  </div>
 
 </body>
 
