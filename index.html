@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Basic Sample Usage</title>
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.min.js"></script>
+	  <script type="text/javascript" src="lib/underscore-1.3.3.min.js"></script>
+    <script src="http://d3js.org/d3.v2.js"></script>
+    <script type="text/javascript" src="source/octocom.js"></script>
+    <script type="text/javascript" src="source/octoviz.js"></script>
+
+    <link type="text/css" rel="stylesheet" href="css/bootstrap-2.0.2.min.css">
+    <link type="text/css" rel="stylesheet" href="css/main.css">
+
+
+</head>
+
+<body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="#">octoviz</a>
+        <ul class="nav">
+          <li class="active"><a href="#">Commit-History</a></li>
+          <li><a href="https://github.com/jamuhl/octoviz">Fork-Me</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="page-header">
+      <h1> octoviz
+        <small> - visualize your github commit history</small>
+      </h1>
+
+      <div class="well">
+        <form id="loadControl" class="form-inline">
+          <input id="repo" type="text" value="jamuhl/octoviz" placeholder="user/repository" />
+          <input id="branch" type="text" value="master" placeholder="branch"/>
+          <button id="load" class="btn">load</button>
+        </form>
+
+        <form id="controls" class="form-inline">
+          <button id="play" class="btn btn-primary"><i class="icon-play"></i></button>
+          <button id="pause" class="btn"><i class="icon-pause"></i></button>
+          <button id="previous" class="btn"><i class="icon-step-backward"></i></button>
+          <button id="next" class="btn"><i class="icon-step-forward"></i></button>
+        </form>
+      </div>
+
+    </div>
+
+    <div id="main" class="content">
+      <div id="viz" ></div>
+    </div>
+
+    <footer id="footer">
+      <p>--- jamuhl 2010 ---</p>
+    </footer>
+
+  </div>
+
+</body>
+
+</html>
