@@ -61,22 +61,42 @@
         var history = [{
             id: 'root',
             name: name,
+            contributors: [],
             children: []
         }];
 
         var z = 0;
         for (var i = commits.length - 1; i >= 0; i--) {
             if (z > 0) history[z] = jQuery.extend(true, {}, history[z - 1]);
-            var commit = commits[i];
-            var contributorColor = intToARGB(hashCode(commit.commit.committer.name));
-            contributorColor = '#' + contributorColor.substring(0, 6);
+            
+            var root = history[z]
+              , commit = commits[i]
+              , committer = { name: commit.commit.committer.name };
 
+            // add commit infos
+            root.commitMsg = commit.commit.message;
+
+            var contributor = _.find(root.contributors, function(contr) {
+                return contr.name === committer.name;
+            });
+
+            if (!contributor) {
+                contributor = committer;
+
+                // calculate committer color
+                var contributorColor = intToARGB(hashCode(contributor.name));
+                contributor.color = '#' + contributorColor.substring(0, 6);
+
+                root.contributors.push(contributor);
+            }
+
+            // append files as hierarchy
             _.each(commit.files, function(file) {
                 var t = extendTree(history[z], file.filename);
 
                 t.size = (t.size || 0) + (file.additions || 0) + (file.deletions || 0);
                 t.status = file.status;
-                t.color = contributorColor;
+                t.color = contributor.color;
             });
             z++;
         }

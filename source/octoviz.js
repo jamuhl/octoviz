@@ -29,14 +29,18 @@ function initControls() {
     btnLoad.click(function(e) {
       e.preventDefault();
 
+      pause();
       controls.hide();
 
-      root = {};
+      root = { id: 'root', name: '', children: [], contributors: [], commitMsg: 'loading...'};
+      update();
+
       octocom.load(inputRepo.val(), inputBranch.val(), function(history) {
         loadedHistory = history;
         currentFrame = -1;
 
         controls.show();
+        step(1);
       });
     });
 
@@ -116,40 +120,33 @@ function step(i) {
 }
 
 var force = d3.layout.force()
-    .on("tick", tick)
+    .on('tick', tick)
     .charge(function(d) { return d._children ? -d.size / 100 : -500; })
     .linkDistance(function(d) { return (d.target.children || d.target._children) ? 180 : 30; })
     .size([w, h - 160])
     .friction(0.4);
 
 var vis
+  , commitMsg;
 
 $(document).ready(initVis);
 
 function initVis() {
-    vis = d3.select("#viz").append("svg:svg")
-        .attr("width", w)
-        .attr("height", h);
+    vis = d3.select('#viz').append('svg:svg')
+        .attr('width', w)
+        .attr('height', h);
+
+    commitMsg = vis.append('svg:text')
+      .attr('class', 'commitMsg')
+      .attr('x', 10)
+      .attr('y', 10)
+      .attr('dy', '.35em')
+      .attr('text-anchor', 'start')
+      .text('commitMsg: ')
+      .style('fill-opacity', 0.7);
 }
 
-// octocom.load(function(history) {
-//   var i = 0;
-
-//   setInterval(function() {
-//       if (i < history.length) {
-//         root = jQuery.extend(true, root, history[i]);
-//         root.fixed = true;
-//         root.x = w / 2;
-//         root.y = h / 2 - 80;
-
-//         update();
-//         i++
-//       }
-//   }, 2000)
-
-// });
-
-// d3.json("http://mbostock.github.com/d3/talk/20111116/flare.json", function(json) {
+// d3.json('http://mbostock.github.com/d3/talk/20111116/flare.json', function(json) {
 //     console.log(json);
 //   root = json;
 //   root.fixed = true;
@@ -161,6 +158,33 @@ function initVis() {
 function update() {
   var nodes = flatten(root),
       links = d3.layout.tree().links(nodes);
+
+  // update commit message
+  commitMsg.text('commitMag: ' + root.commitMsg);
+
+  // contributors
+  var contributors = vis.selectAll(".contributor")
+        .data(root.contributors, function(d) { return d.name; });
+
+  var contributorEnter = contributors.enter().append("g")
+        .attr("class", "contributor")
+        .attr("transform", function(d, i) { return "translate(10," + (h / 2 - i * 20) + ")"; });
+  
+    contributorEnter.append("text")
+        .attr("x", 15)
+        .attr("dy", ".35em")
+        .text(function(d) { return d.name; });
+  
+  contributorEnter.append("rect")
+     .attr("width", 10)
+     .attr("height", 10)
+     .attr('y', -5)
+     .attr('fill', function(d) { return d.color; });
+
+    contributors.exit().remove();
+
+     // .attr("x", function(d, i) { return x(i) - .5; })
+     // .attr("y", function(d) { return h - y(d.value) - .5; })
 
   // remove links with deleted nodes
   links = _.reject(links, function(link) {
@@ -174,67 +198,66 @@ function update() {
       .start();
 
   // Update the links
-  link = vis.selectAll("line.link")
+  link = vis.selectAll('line.link')
       .data(links, function(d) { return d.target.id; });
 
   // Enter any new links.
-  link.enter().insert("svg:line", ".node")
-      .attr("class", "link")
-      .attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; });
+  link.enter().insert('svg:line', '.node')
+      .attr('class', 'link')
+      .attr('x1', function(d) { return d.source.x; })
+      .attr('y1', function(d) { return d.source.y; })
+      .attr('x2', function(d) { return d.target.x; })
+      .attr('y2', function(d) { return d.target.y; });
 
   // Exit any old links
   link.exit().remove();
 
   // Update the nodes
-  node = vis.selectAll("g.node")
+  node = vis.selectAll('g.node')
       .data(nodes, function(d) { return d.id; });
 
-  node.selectAll("circle").transition()
-      .attr("r", function(d) { return d.children ? 4.5 : Math.sqrt(d.size)  /*/ 2*/; })
-      .style("fill", color);
-
+  node.selectAll('circle').transition()
+      .attr('r', function(d) { return d.children ? 4.5 : Math.sqrt(d.size)  /*/ 2*/; })
+      .style('fill', color);
 
   // Enter any new nodes.
-  var nodeEnter = node.enter().append("svg:g")
-      .attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; })
-      .attr("class", "node")
-      .on("click", click)
+  var nodeEnter = node.enter().append('svg:g')
+      .attr('cx', function(d) { return d.x; })
+      .attr('cy', function(d) { return d.y; })
+      .attr('class', 'node')
+      .on('click', click)
       .call(force.drag);
 
-  var circleNode = nodeEnter.append("svg:circle")
-      .attr("r", function(d) { return d.children ? 4.5 : Math.sqrt(d.size) /*/ 2*/; })
-      .style("fill", color);
+  var circleNode = nodeEnter.append('svg:circle')
+      .attr('r', function(d) { return d.children ? 4.5 : Math.sqrt(d.size) /*/ 2*/; })
+      .style('fill', color);
 
-  nodeEnter.append("svg:text")
-      .attr("x", 10)
-      .attr("dy", ".35em")
-      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+  nodeEnter.append('svg:text')
+      .attr('x', 10)
+      .attr('dy', '.35em')
+      .attr('text-anchor', function(d) { return d.children || d._children ? 'end' : 'start'; })
       .text(function(d) { return d.name; })
-      .style("fill-opacity", 0.7);
+      .style('fill-opacity', 0.7);
 
   // Exit any old nodes.
   node.exit().remove();
 }
 
 function tick() {
-  link.attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; });
+  link.attr('x1', function(d) { return d.source.x; })
+      .attr('y1', function(d) { return d.source.y; })
+      .attr('x2', function(d) { return d.target.x; })
+      .attr('y2', function(d) { return d.target.y; });
 
   // svg:g has no cx/cy so translate it to position
-  node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-  // node.attr("cx", function(d) { return d.x; })
-  //     .attr("cy", function(d) { return d.y; });
+  node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; });
+  // node.attr('cx', function(d) { return d.x; })
+  //     .attr('cy', function(d) { return d.y; });
 }
 
 // Color leaf nodes orange, and packages white or blue.
 function color(d) {
-  return d._children ? "#3182bd" : d.children ? "#c6dbef" : d.color;
+  return d._children ? '#3182bd' : d.children ? '#c6dbef' : d.color;
 }
 
 // Toggle children on click.
