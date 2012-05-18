@@ -1,7 +1,7 @@
 (function(window) {
 
-    var w = 1280,
-    h = 800,
+    var w = 1160,
+    h = 1200,
     node,
     link,
     root = {};
@@ -12,16 +12,27 @@ var loadedHistory
 
 $(document).ready(initControls);
 
+var loadControl
+  , btnLoad
+  , controls
+  , btnPlay
+  , btnPause
+  , btnNext
+  , btnPrevious
+  , inputRepo
+  , inputBranch;
+
 function initControls() {
 
-    var btnLoad = $('#load')
-      , controls = $('#controls')
-      , btnPlay = $('#play')
-      , btnPause = $('#pause')
-      , btnNext= $('#next')
-      , btnPrevious = $('#previous')
-      , inputRepo = $('#repo')
-      , inputBranch = $('#branch');
+    loadControl = $('#loadControl');
+    btnLoad = $('#load');
+    controls = $('#controls');
+    btnPlay = $('#play');
+    btnPause = $('#pause');
+    btnNext= $('#next');
+    btnPrevious = $('#previous');
+    inputRepo = $('#repo');
+    inputBranch = $('#branch');
 
     controls.hide();
     btnPause.hide();
@@ -29,10 +40,10 @@ function initControls() {
     btnLoad.click(function(e) {
       e.preventDefault();
 
-      pause();
+      btnPause.click();
       controls.hide();
 
-      root = { id: 'root', name: '', children: [], contributors: [], commitMsg: 'loading...'};
+      root = { id: 'root', name: '', children: [], contributors: [], commitMsg: 'loading...', x: w / 2, y: h / 2 - 280};
       update();
 
       octocom.load(inputRepo.val(), inputBranch.val(), function(history) {
@@ -47,6 +58,7 @@ function initControls() {
     btnPlay.click(function(e) {
       e.preventDefault();
 
+      loadControl.hide();
       btnPlay.hide();
       btnPause.show();
       play();
@@ -55,6 +67,7 @@ function initControls() {
     btnPause.click(function(e) {
       e.preventDefault();
 
+      loadControl.show();
       btnPlay.show();
       btnPause.hide();
       pause();
@@ -62,7 +75,7 @@ function initControls() {
 
     btnNext.click(function(e) {
       e.preventDefault();
-
+      loadControl.hide();
       btnPlay.show();
       btnPause.hide();
       pause();
@@ -71,7 +84,7 @@ function initControls() {
 
     btnPrevious.click(function(e) {
       e.preventDefault();
-
+      loadControl.hide();
       btnPlay.show();
       btnPause.hide();
       pause();
@@ -94,6 +107,7 @@ function step(i) {
   } else if (i > 0 && currentFrame + i < loadedHistory.length) {
     currentFrame = currentFrame + i;
   } else {
+    btnPause.click();
     return;
   }
 
@@ -113,7 +127,7 @@ function step(i) {
     }
     root.fixed = true;
     root.x = w / 2;
-    root.y = h / 2 - 80;
+    root.y = h / 2 - 280;
 
     update();
   }

@@ -6,6 +6,9 @@ html, body {
 body {
     padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
 }
+.container, .navbar .navbar-inner .container {
+    width: 1200px;
+}
 
 .container > footer p {
     text-align: center; /* center align it with the container */
