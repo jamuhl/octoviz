@@ -104,7 +104,7 @@
     }
 
     function loadFiles(repo, branch, callback) {
-        var url = 'https://api.github.io/repos/' + repo + '/commits?sha=' + branch;
+        var url = 'https://api.github.com/repos/' + repo + '/commits?sha=' + branch;
         loadCommitHistory(url, function(commits) {
             commitsToFiles(repo + ':' + branch,commits, function(files) {
                 callback(files);
